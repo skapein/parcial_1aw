@@ -3,72 +3,84 @@ header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Headers: X-API-KEY, Origin, X-Requested-With, Content-Type, Accept, Access-Control-Request-Method");
 header("Access-Control-Allow-Methods: GET, POST, OPTIONS, PUT, DELETE");
 header("Allow: GET, POST, OPTIONS, PUT, DELETE");
+
 $method = $_SERVER["REQUEST_METHOD"];
 if ($method == "OPTIONS") {
     die();
 }
 
-require_once('../model/cursos.model.php');
+// Requiere el modelo de cursos
+require_once('../models/cursos.model.php');
 error_reporting(0);
 $cursos = new Cursos();
 
 switch ($_GET["op"]) {
     case 'todos':
-        $datos = array();
+        // Obtener todos los cursos
         $datos = $cursos->todos();
+        $result = array();
         while ($row = mysqli_fetch_assoc($datos)) {
-            $todos[] = $row;
+            $result[] = $row;
         }
-        echo json_encode($todos);
+        echo json_encode($result);
         break;
 
     case 'uno':
-        $idCurso = isset($_POST["curso_id"]) ? $_POST["curso_id"] : null;
-        if ($idCurso) {
-            $datos = $cursos->uno($idCurso);
+        // Obtener un curso por ID
+        $curso_id = $_POST["curso_id"];
+        if (!empty($curso_id)) {
+            $datos = $cursos->uno($curso_id);
             $res = mysqli_fetch_assoc($datos);
             echo json_encode($res);
         } else {
-            echo json_encode(["error" => "ID del curso no proporcionado."]);
+            echo json_encode(array("error" => "ID del curso no proporcionado."));
         }
         break;
 
     case 'insertar':
-        $nombre = isset($_POST["nombre"]) ? $_POST["nombre"] : null;
-        $descripcion = isset($_POST["descripcion"]) ? $_POST["descripcion"] : null;
-        $fecha_inicio = isset($_POST["fecha_inicio"]) ? $_POST["fecha_inicio"] : null;
-        $fecha_fin = isset($_POST["fecha_fin"]) ? $_POST["fecha_fin"] : null;
+        // Insertar un nuevo curso
+        $nombre = $_POST["nombre"];
+        $descripcion = $_POST["descripcion"];
+        $fecha_inicio = $_POST["fecha_inicio"];
+        $fecha_fin = $_POST["fecha_fin"];
 
-        if ($nombre && $descripcion && $fecha_inicio && $fecha_fin) {
+        if (!empty($nombre) && !empty($descripcion) && !empty($fecha_inicio) && !empty($fecha_fin)) {
             $datos = $cursos->insertar($nombre, $descripcion, $fecha_inicio, $fecha_fin);
-            echo json_encode(["resultado" => $datos]);
+            echo json_encode(array("resultado" => $datos));
         } else {
-            echo json_encode(["error" => "Datos incompletos."]);
+            echo json_encode(array("error" => "Datos incompletos."));
         }
         break;
 
     case 'actualizar':
-        $curso_id = isset($_POST["curso_id"]) ? $_POST["curso_id"] : null;
-        $nombre = isset($_POST["nombre"]) ? $_POST["nombre"] : null;
-        $descripcion = isset($_POST["descripcion"]) ? $_POST["descripcion"] : null;
-        $fecha_inicio = isset($_POST["fecha_inicio"]) ? $_POST["fecha_inicio"] : null;
-        $fecha_fin = isset($_POST["fecha_fin"]) ? $_POST["fecha_fin"] : null;
+        // Actualizar un curso existente
+        $curso_id = $_POST["curso_id"];
+        $nombre = $_POST["nombre"];
+        $descripcion = $_POST["descripcion"];
+        $fecha_inicio = $_POST["fecha_inicio"];
+        $fecha_fin = $_POST["fecha_fin"];
 
-        if ($curso_id && $nombre && $descripcion && $fecha_inicio && $fecha_fin) {
+        if (!empty($curso_id) && !empty($nombre) && !empty($descripcion) && !empty($fecha_inicio) && !empty($fecha_fin)) {
             $datos = $cursos->actualizar($curso_id, $nombre, $descripcion, $fecha_inicio, $fecha_fin);
-            echo json_encode(["resultado" => $datos]);
+            echo json_encode(array("resultado" => $datos));
         } else {
-            echo json_encode(["error" => "Datos incompletos."]);
+            echo json_encode(array("error" => "Datos incompletos."));
         }
         break;
 
     case 'eliminar':
-        $curso_id = isset($_POST["curso_id"]) ? $_POST["curso_id"] : null;
-        if ($curso_id) {
+        // Eliminar un curso por ID
+        $curso_id = $_POST["curso_id"];
+        if (!empty($curso_id)) {
             $datos = $cursos->eliminar($curso_id);
-            echo json_encode(["resultado" => $datos]);
+            echo json_encode(array("resultado" => $datos));
         } else {
-            echo json_encode(["error" => "ID del curso no proporcionado."]);
+            echo json_encode(array("error" => "ID del curso no proporcionado."));
         }
         break;
+
+    default:
+        echo json_encode(array("error" => "Operación no válida."));
+        break;
 }
+?>
